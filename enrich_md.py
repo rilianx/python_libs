@@ -121,7 +121,7 @@ def describe_image_with_context(client, image_path: Path, context_text: str, mod
     # Si todo falla, devolver repr de la respuesta corta
     return str(response)
 
-def extract_image_descriptions(temp_dir):
+def extract_image_descriptions(client, temp_dir):
 
   # ---------- EJEMPLO DE USO SOBRE .md y sus imágenes ----------
   md_paths = glob.glob(os.path.join(temp_dir, '**', '*.md'), recursive=True)
@@ -156,7 +156,7 @@ def extract_image_descriptions(temp_dir):
           #print(f"{rel_img}: {context}")
 
 
-          desc = describe_image_with_context(abs_img_path, context)
+          desc = describe_image_with_context(client, abs_img_path, context)
           image_descriptions[key] = desc
           print(f"Procesada imagen {rel_img}: {desc}")
 
