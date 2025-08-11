@@ -62,7 +62,7 @@ def extract_paragraph_context(md_text, image_markdown, window_paragraphs=1):
         parts.append(blocks[target_idx + 1])
     return "\n\n".join(p for p in parts if p)
 
-def describe_image_with_context(image_path: Path, context_text: str, model="gpt-4o-mini", max_tokens=200):
+def describe_image_with_context(client, image_path: Path, context_text: str, model="gpt-4o-mini", max_tokens=200):
     """
     Llama a la API de OpenAI (Responses) enviando imagen + contexto y devuelve la descripción.
     """
