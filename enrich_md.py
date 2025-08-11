@@ -9,6 +9,7 @@ from urllib.parse import unquote
 
 from google.colab import files
 import os
+import zipfile
 import tempfile
 import openai
 from PIL import Image
