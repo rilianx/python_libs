@@ -82,7 +82,7 @@ def describe_image_with_context(client, image_path: Path, context_text: str, mod
         "Recuerda usar no más de 50 palabras."
     )
 
-    print(f"Prompt:\n{prompt}")
+    #print(f"Prompt:\n{prompt}")
 
     response = client.responses.create(
         model=model,
@@ -158,7 +158,7 @@ def extract_image_descriptions(client, temp_dir):
 
           desc = describe_image_with_context(client, abs_img_path, context)
           image_descriptions[key] = desc
-          print(f"Procesada imagen {rel_img}: {desc}")
+          #print(f"Procesada imagen {rel_img}: {desc}")
 
   return md_text, image_descriptions
 
