@@ -1,4 +1,3 @@
-import openai
 from PIL import Image
 import io
 import base64
@@ -7,6 +6,17 @@ from openai import OpenAI
 from pathlib import Path
 import glob
 from urllib.parse import unquote
+
+from google.colab import files
+import os
+import tempfile
+import openai
+from PIL import Image
+import io
+import base64
+import re
+from openai import OpenAI
+
 
 
 # ---------- FUNCIONES AUXILIARES ----------
