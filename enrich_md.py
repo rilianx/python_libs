@@ -143,7 +143,7 @@ def extract_image_descriptions(client, temp_dir):
           abs_img_path = (md_path.parent / rel_img).resolve()
           key = os.path.normpath(os.path.join(os.path.relpath(md_path.parent, start=temp_dir), rel_img))
           if not abs_img_path.is_file():
-              print(f"Advertencia: imagen no encontrada {abs_img_path}")
+              print(f"Advertencia: imagen no encontrada")
               continue
           if key in image_descriptions:
               continue  # ya procesada
