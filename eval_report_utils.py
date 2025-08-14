@@ -158,7 +158,7 @@ def get_sections(client, encabezados, sections=["Introducción","Conclusión"], 
 #open file DiseñoAlgoritmos
 import ast
 
-def generate_guideline(filename):
+def generate_guideline(filename, guideline_template):
   ruta = f'/content/evaluacionInformes/ListasCotejo/{filename}'
 
   with open(ruta, 'r') as file:
