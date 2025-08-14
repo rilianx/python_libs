@@ -204,3 +204,156 @@ def unzip_markdown(zip_path = "/content/NICOLAS ALEJANDRO FREZ VALENCIA_1967793_
   with zipfile.ZipFile(zip_path, 'r') as zip_ref:
       zip_ref.extractall(temp_dir)
   return temp_dir
+
+
+from pathlib import Path
+from markdown import markdown
+from markdown_it import MarkdownIt
+from weasyprint import HTML
+from IPython.display import Markdown, display
+
+from google.colab import auth
+auth.authenticate_user()
+
+import google.auth
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+import contextlib
+import os, sys
+
+import os, sys, logging, warnings
+
+class ultra_quiet:
+    def __enter__(self):
+        # Silenciar logging y warnings de Python
+        logging.disable(logging.CRITICAL)
+        for name in ("weasyprint", "fontTools", "fontTools.subset",
+                     "fontTools.ttLib", "fontTools.ttLib.ttFont"):
+            lg = logging.getLogger(name)
+            lg.disabled = True
+            lg.propagate = False
+        warnings.filterwarnings("ignore")
+
+        # Guardar stdout/stderr de alto nivel
+        self._stdout = sys.stdout
+        self._stderr = sys.stderr
+
+        # Guardar FDs originales
+        self.stdout_fd = os.dup(1)
+        self.stderr_fd = os.dup(2)
+
+        # Abrir /dev/null y redirigir FDs (cubre prints y C-extensions)
+        self.null = open(os.devnull, 'w')
+        os.dup2(self.null.fileno(), 1)
+        os.dup2(self.null.fileno(), 2)
+
+        # También redirigir objetos de alto nivel
+        sys.stdout = self.null
+        sys.stderr = self.null
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        # Restaurar Python-level
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
+        logging.disable(logging.NOTSET)
+
+        # Restaurar FDs
+        os.dup2(self.stdout_fd, 1)
+        os.dup2(self.stderr_fd, 2)
+        os.close(self.stdout_fd)
+        os.close(self.stderr_fd)
+
+        # Cerrar /dev/null
+        self.null.close()
+
+
+def markdown_to_pdf(answer, output_path, display_=False):
+    try:
+        if display_:
+            display(Markdown(f"File: {output_path}\n{answer}\n-----"))
+
+        # Convertir markdown a HTML con envoltorio bonito
+        #html_body = markdown(answer, extensions=["extra", "tables", "sane_lists"])
+
+        md = MarkdownIt()
+        html_body = md.render(answer)
+
+        html_full = f"""
+<html><head><style>
+body {{
+    font-family: 'Helvetica', sans-serif;
+    margin: 2em;
+    line-height: 1.6;
+    color: #222;
+}}
+h1, h2, h3 {{
+    color: #004d99;
+}}
+pre, code {{
+    background-color: #f5f5f5;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}}
+blockquote {{
+    border-left: 4px solid #ccc;
+    margin: 1em 0;
+    padding-left: 1em;
+    color: #555;
+}}
+ul, ol {{
+    margin-left: 1.5em;
+    padding-left: 1em;
+}}
+li {{
+    margin-bottom: 0.2em;
+}}
+</style></head><body>
+{html_body}
+</body></html>
+"""
+        # Guardar como PDF
+        pdf_path = f"{output_path}"
+
+
+        with ultra_quiet():
+          HTML(string=html_full).write_pdf(pdf_path)
+        #HTML(string=html_full).write_pdf(pdf_path)
+        #print(2)
+ 
+        #HTML(string=html_full).write_pdf(pdf_path)
+
+        print(f"[✔] PDF guardado en: {pdf_path}")
+        return pdf_path
+    except Exception as e:
+        print(f"[⚠] Error en archivo {pdf_path}: {e}")
+        return None
+
+
+def list_files_in_drive_folder(folder_id):
+    """Devuelve lista de (nombre, id) de los archivos en una carpeta de Drive."""
+    creds, _ = google.auth.default()
+    drive = build("drive", "v3", credentials=creds)
+
+    files_info = []
+    page_token = None
+
+    while True:
+        response = drive.files().list(
+            q=f"'{folder_id}' in parents and trashed = false",
+            spaces="drive",
+            fields="nextPageToken, files(id, name)",
+            pageToken=page_token
+        ).execute()
+
+        for file in response.get("files", []):
+            files_info.append((file["name"], file["id"]))
+
+        page_token = response.get("nextPageToken", None)
+        if page_token is None:
+            break
+
+    return files_info
+
