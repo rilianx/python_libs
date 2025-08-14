@@ -212,9 +212,6 @@ from markdown_it import MarkdownIt
 from weasyprint import HTML
 from IPython.display import Markdown, display
 
-from google.colab import auth
-auth.authenticate_user()
-
 import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
