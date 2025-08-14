@@ -155,7 +155,7 @@ def extract_image_descriptions(client, temp_dir):
           image_markdown_full = f"![~]({rel_img})"
           context = extract_paragraph_context(md_text, f"({rel_img_})", window_paragraphs=2)  # si usás alt, podés ajustar regex
 
-          print(f"{rel_img}: {context}")
+          # print(f"{rel_img}: {context}")
 
 
           desc = describe_image_with_context(client, abs_img_path, context)
