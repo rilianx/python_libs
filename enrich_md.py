@@ -128,7 +128,9 @@ def extract_image_descriptions(client, temp_dir):
   md_paths = [Path(p) for p in md_paths]
 
   # patrón de imagen Markdown: ![alt](ruta)
-  img_pattern = re.compile(r'!\[.*?\]\((.*?)\)')
+  #img_pattern = re.compile(r'!\[.*?\]\((.*?)\)')
+  
+  img_pattern = re.compile(r'!\[.*?\]\((.*?\.\w{3,4})\)')
 
   # Suponiendo que ya tenés md_paths (lista de Path) desde el paso anterior
   # y que las imágenes están referenciadas con rutas relativas en el markdown
@@ -153,7 +155,7 @@ def extract_image_descriptions(client, temp_dir):
           image_markdown_full = f"![~]({rel_img})"
           context = extract_paragraph_context(md_text, f"({rel_img_})", window_paragraphs=2)  # si usás alt, podés ajustar regex
 
-          #print(f"{rel_img}: {context}")
+          print(f"{rel_img}: {context}")
 
 
           desc = describe_image_with_context(client, abs_img_path, context)
@@ -171,7 +173,9 @@ def enrich_markdown(md_text: str, image_descriptions: dict) -> str:
     """
 
     # Patrón para ![alt](ruta)
-    img_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+    #img_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+    img_pattern = re.compile(r'!\[(.*?)\]\((.*?\.\w{3,4})\)')
+
 
     def replace_img(match):
         alt_text, img_path = match.groups()
