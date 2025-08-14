@@ -167,6 +167,78 @@ def extract_image_descriptions(client, temp_dir):
 import re
 from pathlib import Path
 
+import re
+import base64
+import os
+from pathlib import Path
+
+def extrae_imagenes_base64(path_md):
+    """
+    Procesa un archivo Markdown con imágenes en base64 en formato tipo:
+    [image1]: <data:image/png;base64,...>
+
+    Extrae las imágenes a una carpeta local (junto al archivo) y reemplaza la sintaxis
+    por ![texto](ruta/imagen.png)
+    """
+    # Asegurar que el archivo existe
+    path_md = Path(path_md)
+    if not path_md.exists():
+        raise FileNotFoundError(f"El archivo {path_md} no existe, baka.")
+
+    # Leer el contenido del archivo
+    markdown_text = path_md.read_text(encoding="utf-8")
+
+    # Crear carpeta de destino: misma ruta + carpeta 'imagenes'
+    carpeta_destino = path_md.parent / "imagenes"
+    carpeta_destino.mkdir(parents=True, exist_ok=True)
+
+    # Regex para detectar imágenes base64
+    pattern = re.compile(
+        r'\[(?P<id>[^\]]+)\]:\s*<(?P<type>data:image\/[a-zA-Z]+);base64,(?P<data>[A-Za-z0-9+/=]+)>'
+    )
+
+    nuevas_lineas = []
+    reemplazos = {}
+    contador = 0
+
+    for linea in markdown_text.splitlines():
+        match = pattern.match(linea)
+        if match:
+            ext = match.group("type").split("/")[-1]
+            b64_data = match.group("data")
+            img_bytes = base64.b64decode(b64_data)
+
+            filename = f"imagen_{contador}.{ext}"
+            ruta_img_relativa = Path("imagenes") / filename
+            ruta_img_absoluta = carpeta_destino / filename
+
+            with open(ruta_img_absoluta, "wb") as f:
+                f.write(img_bytes)
+
+            reemplazos[match.group("id")] = ruta_img_relativa.as_posix()
+            contador += 1
+        else:
+            nuevas_lineas.append(linea)
+
+    if contador == 0: return None
+
+    # Reconstruir markdown sin las líneas base64
+    texto_actualizado = "\n".join(nuevas_lineas)
+
+    # Reemplazar referencias tipo ![desc][image1]
+    for key, ruta in reemplazos.items():
+        ref_pattern = re.compile(r'!\[([^\]]*)\]\[\s*' + re.escape(key) + r'\s*\]')
+        texto_actualizado = ref_pattern.sub(r'![\1](' + ruta + r')', texto_actualizado)
+
+    # Escribir el resultado en el mismo archivo (o uno nuevo, si prefieres)
+    nuevo_path = path_md.with_name(path_md.stem + ".md")
+    nuevo_path.write_text(texto_actualizado, encoding="utf-8")
+
+    print(f"✨ Archivo procesado guardado como: {nuevo_path}")
+    print(f"🖼️  Imágenes extraídas en: {carpeta_destino.resolve()}")
+
+    return nuevo_path
+
 def enrich_markdown(md_text: str, image_descriptions: dict) -> str:
     """
     Inserta la descripción debajo de cada referencia ![...](...) si existe en image_descriptions.
