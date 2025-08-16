@@ -201,7 +201,15 @@ def generate_text(contenido, sections, indice):
 
   text = "Estos son algunas secciones seleccionadas del informe entregado por el estudiante:\n\n"
 
-  selected_lines = [[indice[section][0]-1, indice[section][1] ] for section in sections]
+  selected_lines = []
+  for section in sections:
+      intervalos = indice[section]
+      if isinstance(intervalos[0], int):  # Un solo intervalo tipo [start, end]
+          selected_lines.append([intervalos[0] - 1, intervalos[1]])
+      else:  # Lista de intervalos
+          for start, end in intervalos:
+              selected_lines.append([start - 1, end])
+
   selected_lines = merge_intervals(selected_lines)
 
   selected_texts = []
