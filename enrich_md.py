@@ -406,7 +406,7 @@ def list_files_in_drive_folder(folder_id):
     creds, _ = google.auth.default()
     drive = build("drive", "v3", credentials=creds)
 
-    files_info = []
+    files_info = dict()
     page_token = None
 
     while True:
@@ -418,7 +418,7 @@ def list_files_in_drive_folder(folder_id):
         ).execute()
 
         for file in response.get("files", []):
-            files_info.append((file["name"], file["id"]))
+            files_info[file["name"].split('.')[0]] = file["id"]
 
         page_token = response.get("nextPageToken", None)
         if page_token is None:
