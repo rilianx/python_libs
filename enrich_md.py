@@ -31,7 +31,7 @@ def resize_image_if_needed(image_path: Path, max_size=(480, 480)):
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
             img.save(image_path)
 
-def extract_paragraph_context(md_text, image_markdown, window_paragraphs=1):
+def extract_paragraph_context(md_text, image_markdown,  window_paragraphs=2):
     """
     Dado el texto completo del markdown y la línea tipo ![...](ruta),
     extrae el párrafo anterior y el siguiente como contexto (o lo más cercano).
@@ -62,7 +62,7 @@ def extract_paragraph_context(md_text, image_markdown, window_paragraphs=1):
         parts.append(blocks[target_idx + 1])
     return "\n\n".join(p for p in parts if p)
 
-def describe_image_with_context(client, image_path: Path, context_text: str, model="gpt-4o-mini", max_tokens=200):
+def describe_image_with_context(client, prompt, image_path: Path, model="gpt-4o-mini", max_tokens=500):
     """
     Llama a la API de OpenAI (Responses) enviando imagen + contexto y devuelve la descripción.
     """
@@ -73,14 +73,6 @@ def describe_image_with_context(client, image_path: Path, context_text: str, mod
     # Leer y codificar imagen a base64
     with open(image_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode("utf-8")
-
-    prompt = (
-        "La siguiente imagen aparece en este contexto:\n\n"
-        f"{context_text}\n\n"
-        "Por favor, da una descripción breve (máximo 50 palabras), clara y útil de lo que se ve en la imagen, "
-        "relacionándolo con el contexto. Si algo no es claro o parece ambiguo, menciónalo.\n"
-        "Recuerda usar no más de 50 palabras."
-    )
 
     #print(f"Prompt:\n{prompt}")
 
@@ -121,7 +113,7 @@ def describe_image_with_context(client, image_path: Path, context_text: str, mod
     # Si todo falla, devolver repr de la respuesta corta
     return str(response)
 
-def extract_image_descriptions(client, temp_dir):
+def extract_image_descriptions(client, temp_dir, prompt_template):
 
   # ---------- EJEMPLO DE USO SOBRE .md y sus imágenes ----------
   md_paths = glob.glob(os.path.join(temp_dir, '**', '*.md'), recursive=True)
@@ -155,10 +147,12 @@ def extract_image_descriptions(client, temp_dir):
           image_markdown_full = f"![~]({rel_img})"
           context = extract_paragraph_context(md_text, f"({rel_img_})", window_paragraphs=2)  # si usás alt, podés ajustar regex
 
+          prompt_final = prompt_template.format(context_text=context)
+
           # print(f"{rel_img}: {context}")
 
 
-          desc = describe_image_with_context(client, abs_img_path, context)
+          desc = describe_image_with_context(client, prompt_final, abs_img_path)
           image_descriptions[key] = desc
           #print(f"Procesada imagen {rel_img}: {desc}")
 
