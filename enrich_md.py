@@ -258,7 +258,7 @@ def enrich_markdown(md_text: str, image_descriptions: dict) -> str:
 
         # Reconstruir línea de imagen + descripción si existe
         if desc:
-            return f"![{img_path_norm}](...)\n\n> *Descripción de {img_path_norm}:* {desc}\n"
+            return f"![{img_path_norm}](...)\n\n````\n *Descripción de {img_path_norm}:* {desc}\n````\n"
         else:
             return match.group(0)  # sin cambios
 
