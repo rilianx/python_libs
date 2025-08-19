@@ -171,8 +171,9 @@ def generate_guideline(filename, guideline_template):
   # 2. Unir el resto como texto del cotejo
   cotejo = "".join(lines[1:]).strip()
 
-  with open(f'/content/evaluacionInformes/Ejemplos/{filename}', 'r') as file:
-      ejemplo = file.read()
+  #with open(f'/content/evaluacionInformes/Ejemplos/{filename}', 'r') as file:
+  #    ejemplo = file.read()
+  ejemplo = None
 
   return guideline_template.format(ListaCotejo=cotejo), ejemplo, sections_to_eval
 
