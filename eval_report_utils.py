@@ -30,7 +30,7 @@ from langchain.chains import LLMChain
 import math
 
 
-def eval_fragment(guideline, report_extract):
+def eval_fragment(guideline, report_extract, model_name="gpt-4.1-mini", temperature=0.1):
 
     # 8️⃣ Prompt template
     prompt = ChatPromptTemplate.from_messages([
@@ -41,7 +41,7 @@ def eval_fragment(guideline, report_extract):
         )
     ])
 
-    llm = ChatOpenAI(model_name="gpt-4.1-mini", temperature=0.1)
+    llm = ChatOpenAI(model_name=model_name, temperature=temperature)
 
     # Formatear el prompt con las variables proporcionadas
     formatted_prompt = prompt.format(
