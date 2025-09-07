@@ -25,11 +25,24 @@ from openai import OpenAI
 def resize_image_if_needed(image_path: Path, max_size=(480, 480)):
     """
     Redimensiona la imagen *in place* si supera el tamaño dado.
+    - Si es SVG, primero lo convierte a PNG (mismo nombre, distinta extensión).
+    - Si ya es bitmap, solo redimensiona si excede el tamaño máximo.
     """
+    ext = image_path.suffix.lower()
+
+    # --- Caso especial: SVG ---
+    if ext in [".svg", ".svgz"]:
+        png_path = image_path.with_suffix(".png")
+        cairosvg.svg2png(url=str(image_path), write_to=str(png_path))
+        image_path = png_path  # seguimos trabajando con el PNG generado
+
+    # --- Caso general: imágenes bitmap ---
     with Image.open(image_path) as img:
         if img.width > max_size[0] or img.height > max_size[1]:
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
             img.save(image_path)
+
+    return image_path  # Devuelvo la ruta final de la imagen procesada
 
 def extract_paragraph_context(md_text, image_markdown,  window_paragraphs=2):
     """
