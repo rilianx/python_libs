@@ -82,7 +82,7 @@ def describe_image_with_context(client, prompt, image_path: Path, model="gpt-4o-
     """
 
     # 🔁 REDUCIR imagen si es necesario
-    resize_image_if_needed(image_path, max_size=(480, 480))
+    image_path=resize_image_if_needed(image_path, max_size=(480, 480))
 
     # Leer y codificar imagen a base64
     with open(image_path, "rb") as f:
