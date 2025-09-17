@@ -17,6 +17,7 @@ import io
 import base64
 import re
 from openai import OpenAI
+import cairosvg
 
 
 
@@ -277,12 +278,50 @@ def enrich_markdown(md_text: str, image_descriptions: dict) -> str:
 
     return img_pattern.sub(replace_img, md_text)
 
-def unzip_markdown(zip_path = "/content/NICOLAS ALEJANDRO FREZ VALENCIA_1967793_assignsubmission_file_Reporte1.zip"):
-  # Crear carpeta temporal y descomprimir
-  temp_dir = tempfile.mkdtemp()
-  with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-      zip_ref.extractall(temp_dir)
-  return temp_dir
+import tempfile
+import zipfile
+import os
+import shutil
+
+def unzip_markdown(zip_path, dest_dir=None):
+    # Usar destino proporcionado o uno temporal
+    if dest_dir is None:
+        dest_dir = tempfile.mkdtemp()
+    else:
+        os.makedirs(dest_dir, exist_ok=True)
+
+    current_dir = dest_dir
+
+    # Primer nivel de descompresión
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(current_dir)
+
+    # Repetir mientras haya zips dentro
+    while True:
+        inner_zip = None
+        for root, _, files in os.walk(current_dir):
+            for f in files:
+                if f.lower().endswith(".zip"):
+                    inner_zip = os.path.join(root, f)
+                    break
+            if inner_zip:
+                break
+
+        if not inner_zip:
+            break  # ya no quedan cofres dentro de cofres
+
+        # Nueva carpeta dentro del destino
+        new_dir = os.path.join(dest_dir, os.path.splitext(os.path.basename(inner_zip))[0])
+        os.makedirs(new_dir, exist_ok=True)
+
+        with zipfile.ZipFile(inner_zip, 'r') as zip_ref:
+            zip_ref.extractall(new_dir)
+
+        # Actualizar la carpeta de trabajo
+        current_dir = new_dir
+
+    return current_dir
+
 
 
 from pathlib import Path
