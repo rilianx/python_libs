@@ -127,7 +127,7 @@ def describe_image_with_context(client, prompt, image_path: Path, model="gpt-4o-
     # Si todo falla, devolver repr de la respuesta corta
     return str(response)
 
-def extract_image_descriptions(client, temp_dir, prompt_template):
+def extract_image_descriptions(client, temp_dir, prompt_template, model="gpt-4o-mini"):
 
   # ---------- EJEMPLO DE USO SOBRE .md y sus imágenes ----------
   md_paths = glob.glob(os.path.join(temp_dir, '**', '*.md'), recursive=True)
@@ -166,7 +166,7 @@ def extract_image_descriptions(client, temp_dir, prompt_template):
           # print(f"{rel_img}: {context}")
 
 
-          desc = describe_image_with_context(client, prompt_final, abs_img_path)
+          desc = describe_image_with_context(client, prompt_final, abs_img_path, model=model)
           image_descriptions[key] = desc
           #print(f"Procesada imagen {rel_img}: {desc}")
 
